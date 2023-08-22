@@ -221,7 +221,7 @@ ISO 8601 for everyone!
 
 ## **Wait can it fail?**
 
-Yup. What happens if we give lubridate something that doesn\'t make sense?
+Yup. What happens if we give lubridate something that doesn't make sense?
 
 ```{r}
 my_date_5 <- lubridate::dmy("06-20-2001")
@@ -232,7 +232,7 @@ my_date_6
 
 In other words, parsing dates can fail in multiple ways:
 
--   The parsing can fail because the values don\'t make sense based on the order you gave it (e.g. \"wait you\'re telling me that the month is 17? Nope.\")
+-   The parsing can fail because the values don't make sense based on the order you gave it (e.g. "wait you're telling me that the month is 17? Nope.")
 
 -   The parsing can *work*, but you messed up with the order - so the code runs, but the date stored is *wrong*. This is more dangerous.
 
@@ -290,7 +290,7 @@ second(now)
 
 This can be useful if you want to group your day in different ways for analyses or exploration. Use lubridate functions, in combination with mutate(), to add new columns containing separate pieces of the date, e.g. year, month, day in three separate columns).
 
-For example, let\'s just make a little data frame to try this out:
+For example, let's just make a little data frame to try this out:
 
 ```{r}
 urchin_counts <- data.frame(
@@ -355,13 +355,13 @@ str_detect(my_string_2, pattern = "taco")
 
 It is most powerful when used in combination with other functions.
 
-For example, let\'s look at the `starwars` dataset (in `dplyr`):
+For example, let's look at the `starwars` dataset (in `dplyr`):
 
 ```{r}
 head(starwars)
 ```
 
-I want to only keep rows where the name column contains the pattern \"Skywalker.\" Remember: what\'s the function to keep or exclude rows based on our conditions? It\'s `dplyr::filter()`! I can use that with `str_detect()` to get the Skywalker family characters for me:
+I want to only keep rows where the name column contains the pattern "Skywalker." Remember: what's the function to keep or exclude rows based on our conditions? It's `dplyr::filter()`! I can use that with `str_detect()` to get the Skywalker family characters for me:
 
 ```{r}
 skywalkers <- starwars |> 
