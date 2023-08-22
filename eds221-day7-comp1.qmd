@@ -34,6 +34,7 @@ library(kableExtra)
 biscoe_dream <- penguins |> 
   filter(island %in% c("Biscoe", "Dream")) |> 
   select(!(sex:year)) |> 
+  # could also write: select(-year, -sex)
   mutate(body_mass_kg = (body_mass_g * 0.001)) |> 
   rename(location = island)
 ```
@@ -42,14 +43,37 @@ biscoe_dream <- penguins |>
 
 1.  Limit to only Adelie penguins
 
-2.  Remove any observations where `flipper_length_mm` is `NA` (hint: `!is.na()`)
+2.  Remove any observations where `flipper_length_mm` is `NA` (hint: `!is.na()`) or drop_na()
 
 3.  Group the data by `sex`
 
 4.  Find the mean (`mean()`), standard deviation (`sd`) and sample size (`n`) of flipper_length_mm for male and female Adelie penguins, returned in a nice summary table
 
 ```{r}
+adelies <- penguins |> 
+  filter(species == "Adelie") |> 
+# unique(adelies$species)
+  drop_na(flipper_length_mm) |> 
+  group_by(sex) |> 
+  summarize(mean_flipper_length_mm = mean(flipper_length_mm),
+            sd_flipper_length_mm = sd(flipper_length_mm),
+            sample_size = n())
+```
 
+Example with count() funciton
+
+```{r}
+#old way 
+penguins |> 
+  group_by(species, island, sex) |> 
+  summarize(sample_size = n())
+```
+
+vs
+
+```{r}
+#dplyr::count()
+penguins |> count(species, island, sex)
 ```
 
 # **Part 2: Wrangling continued - joins of different flavors**
