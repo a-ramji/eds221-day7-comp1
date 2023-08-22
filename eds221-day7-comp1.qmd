@@ -3,8 +3,6 @@ title: "EDS Day 7 Interactive Session"
 author: "Anna Ramji"
 format: html
 editor: visual
-execute:
-  warning: false
 ---
 
 ## Day 7 Interactive Session
@@ -180,14 +178,242 @@ anti_join_example <- anti_join(animals, sites)
 
 # **Part 3: easier dates and times with {lubridate}**
 
+-   ymd: if the date is in year-month-day
+
+-   mdy: if the date is in month-day-year
+
+-   dmy: if the date is in day-month-year
+
 ## **Witness some lubridate magic:**
 
 ```{r}
-my_date <- "03-15-1998"
-lubridate::mdy(my_date)
+my_date_1 <- "03-15-1998"
+lub_my_date_1 <- lubridate::mdy(my_date_1)
+my_date_1
+class(my_date_1)
+class(lub_my_date_1)
 ```
 
 ```{r}
-my_date <- "11/7/2003"
-lubridate::mdy(my_date)
+my_date_2 <- "11/7/2003"
+lub_my_date_2 <- lubridate::mdy(my_date_2)
+lub_my_date_2
+class(lub_my_date_2)
+```
+
+```{r}
+my_date_3 <- "08-Jun-1974"
+lub_my_date_3 <- lubridate::dmy(my_date_3)
+lub_my_date_3
+class(lub_my_date_3)
+```
+
+```{r}
+# ex: R sees 20041003 as a number
+# lubridate sees it as a date!
+class(20041003)
+my_date_4 <- ymd(20041003)
+my_date_4
+class(my_date_4)
+```
+
+ISO 8601 for everyone!
+
+## **Wait can it fail?**
+
+Yup. What happens if we give lubridate something that doesn\'t make sense?
+
+```{r}
+my_date_5 <- lubridate::dmy("06-20-2001")
+my_date_5
+my_date_6 <- lubridate::mdy("06-20-2001")
+my_date_6
+```
+
+In other words, parsing dates can fail in multiple ways:
+
+-   The parsing can fail because the values don\'t make sense based on the order you gave it (e.g. \"wait you\'re telling me that the month is 17? Nope.\")
+
+-   The parsing can *work*, but you messed up with the order - so the code runs, but the date stored is *wrong*. This is more dangerous.
+
+KNOW YOUR DATA.
+
+## **It even makes it relatively easy to deal with times & time zones**
+
+See the Olson Names: [**https://en.wikipedia.org/wiki/List_of_tz_database_time_zones**](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
+Use `ymd-hm` to convert this to a date time that R will understand.
+
+Question: Why am I using `ymd_hm` here? (year month day, hour minute)
+
+```{r}
+time_1 <- "2020-08-12 11:18"
+lub_time_1 <- ymd_hm(time_1)
+class(time_1)
+class(lub_time_1)
+```
+
+Parse June 2, 1982 at 4pm UTC(16:00) as a date in R:
+
+```{r}
+time_2 <- lubridate::mdy_hm("June 2, 1982 4:00 pm")
+time_2
+
+```
+
+```{r}
+with_tz(time_2, "America/Los_Angeles")
+with_tz(time_2, "Africa/Johannesburg")
+with_tz(time_2, "Africa/Djibouti")
+now <- with_tz(Sys.time(), "Europe/Belgrade")
+# Sys.time() gives your current time and zone
+```
+
+pull apart different pieces of date-times
+
+### Access different parts of date-times
+
+```{r}
+# class(now)
+
+lubridate::day(now)
+lubridate::week(now)
+month(now)
+year(now)
+minute(now)
+second(now)
+```
+
+### Let's practice!
+
+## **Date pieces as new columns**
+
+This can be useful if you want to group your day in different ways for analyses or exploration. Use lubridate functions, in combination with mutate(), to add new columns containing separate pieces of the date, e.g. year, month, day in three separate columns).
+
+For example, let\'s just make a little data frame to try this out:
+
+```{r}
+urchin_counts <- data.frame(
+  date = c("Oct 12, 2004", "October 18, 2007", "Feb 12, 2003", "Feb 14, 2008"),
+  species = c("purple", "red", "red", "red"),
+  size_mm = c(19, 24, 18, 11)
+)
+```
+
+```{r}
+class(urchin_counts$date)
+```
+
+we want this date column to be classified as dates
+
+```{r}
+urchin_mean_by_month <- urchin_counts |> 
+  mutate(date = lubridate::mdy(date)) |> 
+  # Add a new column month that only contain the month number from date
+  mutate(month = month(date)) |> 
+  group_by(month) |> 
+  # And then we could use group_by() to find different summary values by group, for example.
+  summarize(mean_size = mean(size_mm))
+```
+
+```{r}
+class(urchin_mean_by_month$date)
+```
+
+Yay! **Can find durations of times also**
+
+# **Wrangling strings with `stringr`**
+
+## **Use `str_detect()` to detect a string pattern**
+
+Returns TRUE or FALSE based on whether the pattern is or is not detected.
+
+```{r}
+my_string <- "Teddy loves salmon and kibble and toys."
+
+```
+
+```{r}
+str_detect(my_string, pattern = "kibble")
+```
+
+```{r}
+str_detect(my_string, "hot weather")
+```
+
+we can also pipe in (my_string %\>% str_detect("ccccc")
+
+or vectorize
+
+```{r}
+my_string_2 <- c("burrito", "fish taco", "Taco salad", "super-burrito")
+```
+
+```{r}
+str_detect(my_string_2, pattern = "taco")
+```
+
+It is most powerful when used in combination with other functions.
+
+For example, let\'s look at the `starwars` dataset (in `dplyr`):
+
+```{r}
+head(starwars)
+```
+
+I want to only keep rows where the name column contains the pattern \"Skywalker.\" Remember: what\'s the function to keep or exclude rows based on our conditions? It\'s `dplyr::filter()`! I can use that with `str_detect()` to get the Skywalker family characters for me:
+
+```{r}
+skywalkers <- starwars |> 
+  filter(str_detect(name, "Skywalker"))
+```
+
+## **Use `str_replace()` to replace a string pattern with something else**
+
+replace the pattern sky with fire
+
+```{r}
+starwars |> 
+  mutate(name_new = str_replace(name, pattern = "Sky", replacement = "Fire"))
+```
+
+You can imagine this may be really helpful if there is a repeated spelling error, annoying syntax, or otherwise that you want to update throughout your data frame.
+
+Note: this is very different from text mining and analysis, which involves analyzing textual information to gain insights about patterns, trends, and sentiments - look forward to that in EDS 242!
+
+especially helpful if there's a repeated spelling error!!
+
+## **Use `str_trim()` or `str_squish()` to remove excess white space**
+
+str_trim() to get rid of leading and trailing whitespace
+
+str_squish() to get rid of leading and trailing whitespace AND excess interior whitespace
+
+-   note: it is really common to have an accidental space at the end of data entries
+
+```{r}
+my_string_3 <- "     Hi my name   is teddy !!!!      "
+str_trim(my_string_3)
+str_squish(my_string_3)
+```
+
+```{r}
+feedback <- c(" I ate     some   nachos", "Wednesday morning   ")
+
+# Removes leading, trailing & duplicate interior whitespaces
+str_squish(feedback)
+```
+
+## **Convert cases**
+
+```{r}
+str_to_lower(my_string_3)
+str_to_upper(my_string_3)
+str_to_title(my_string_3)
+str_to_sentence(my_string_3)
+```
+
+```{r}
+starwars |> 
+  mutate(species_lower = str_to_lower(species))
 ```
