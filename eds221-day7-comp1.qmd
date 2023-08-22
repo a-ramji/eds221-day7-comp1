@@ -31,7 +31,11 @@ library(kableExtra)
 4.  Rename the `island` variable to `location`
 
 ```{r}
-
+biscoe_dream <- penguins |> 
+  filter(island %in% c("Biscoe", "Dream")) |> 
+  select(!(sex:year)) |> 
+  mutate(body_mass_kg = (body_mass_g * 0.001)) |> 
+  rename(location = island)
 ```
 
 **Refresher 2:** Staring with the `penguins` dataset in the `palmerpenguins` package, write a single piped sequence in which you:
@@ -104,11 +108,11 @@ Rows are only kept if the key matches in both x and y (intersection).
 
 ## **Filtering joins**
 
-We\'ll just look at two filtering join functions (from dplyr documentation):
+We'll just look at two filtering join functions (from dplyr documentation):
 
--   `semi_join()` \"return\[s\] all rows from x with a match in y\"
+-   `semi_join()` "return\[s\] all rows from x with a match in y"
 
--   `anti_join()` \"return\[s\] all rows from x *without* a match in y\"
+-   `anti_join()` "return\[s\] all rows from x *without* a match in y"
 
 ```{r}
 
